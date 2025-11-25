@@ -8,7 +8,7 @@ import Timeline from './components/Timeline.jsx';
 
 const App = () => {
   return (
-    <Router>
+    <Router basename='/moments'>
       <Routes>
       <Route path="/" element={<Home />} />
         <Route path="/timeline" element={<TimelineLayout />}/>
