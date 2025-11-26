@@ -1,9 +1,10 @@
 import React from "react";
 import DoodleBackground from "./DoodleBackground.jsx";
 import Heart from "lucide-react/dist/esm/icons/heart.js";
-import Star from "lucide-react/dist/esm/icons/star.js";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
+  const navigate = useNavigate();
   React.useEffect(() => {
     localStorage.removeItem('name');
   }, []);
@@ -37,12 +38,12 @@ const Home = () => {
           Screw the distance; let's cherish the moments that bring us closer
         </p>
 
-        <a
+        <div onClick={() => navigate('/timeline')}
           href="/timeline"
           className="px-6 py-3 bg-slate-800 text-white rounded-full shadow-lg hover:bg-slate-700 transition"
         >
           View Timeline
-        </a>
+        </div>
       </div>
     </div>
   );
