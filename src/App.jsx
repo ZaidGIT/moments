@@ -7,7 +7,7 @@ import Timeline from './components/Timeline.jsx';
 
 const App = () => {
   return (
-    <HashRouter>
+    <HashRouter basename='/'>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/timeline" element={<TimelineLayout />} />
