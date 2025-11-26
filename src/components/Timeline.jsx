@@ -9,6 +9,7 @@ import {
 import Heart from "lucide-react/dist/esm/icons/heart.js";
 import Calendar from "lucide-react/dist/esm/icons/calendar.js";
 import UploadModal from "./UploadModal.jsx";
+import { ZAID_EMAIL, YAKSHI_EMAIL, sendEmail } from "../client/emailJsClient.js";
 
 const Timeline = () => {
   const name = localStorage.getItem("name");
@@ -50,9 +51,34 @@ const Timeline = () => {
       alert("Please select a photo and enter a description.");
       return;
     }
-    addPost();
-    setShowModal(false);
+    addPost()
+    .then(() => {
+      setShowModal(false);
+      handleSendEmail();
+    });
   };
+
+  const handleSendEmail = async () => {
+    try {
+      if (name.startsWith('Y') ){
+        await sendEmail({
+          name: name,
+          email: ZAID_EMAIL,
+          message: `Twinnnieeeee!!!! Your twin has added a new moment just now! Hurry and head over to:
+          https://zaidgit.github.io/moments/` 
+        })
+      } else if (name.startsWith('Z')) {
+        await sendEmail({
+          name: name,
+          email: YAKSHI_EMAIL,
+          message: `Twinnnieeeee!!! Your twin has added a new moment just now! Hurry and head over to:
+          https://zaidgit.github.io/moments/` 
+        })
+      }
+    } catch (error) {
+      console.error("Error sending email:", error);
+    }
+  }
 
   React.useEffect(() => {
     loadTimeline();
