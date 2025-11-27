@@ -1,7 +1,7 @@
 import emailjs from "@emailjs/browser";
 
 const EMAILJS_SERVICE_ID = "service_ydgdg3f";
-const EMAILJS_TEMPLATE_ID = "template_8q25mcb";
+const EMAILJS_TEMPLATE_ID = "template_iiaun2f";
 const EMAILJS_PUBLIC_KEY = "ggW0b2eLK2EmzHHPK";
 
 export const ZAID_EMAIL = "izaid.dev@gmail.com";
