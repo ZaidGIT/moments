@@ -1,7 +1,17 @@
 import React, { useRef } from "react";
 import { X, Image as ImageIcon, Camera, FileText, Trash2 } from "lucide-react";
+import { Loader } from "lucide-react";
 
-const UploadModal = ({ onSave, onClose, file, setFile, desc, setDesc, open }) => {
+const UploadModal = ({
+  onSave,
+  onClose,
+  file,
+  setFile,
+  desc,
+  setDesc,
+  open,
+  loading,
+}) => {
   const galleryInputRef = useRef(null);
   const cameraInputRef = useRef(null);
 
@@ -9,9 +19,7 @@ const UploadModal = ({ onSave, onClose, file, setFile, desc, setDesc, open }) =>
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm overflow-y-auto">
-      
       <div className="bg-white/90 backdrop-blur-xl border border-slate-200 shadow-2xl rounded-2xl w-11/12 max-w-lg p-6 relative animate-fade-in">
-
         {/* Close */}
         <button
           onClick={onClose}
@@ -45,7 +53,6 @@ const UploadModal = ({ onSave, onClose, file, setFile, desc, setDesc, open }) =>
 
         {/* Options */}
         <div className="flex flex-col gap-4 mb-6">
-
           {/* Upload from Gallery */}
           <button
             onClick={() => galleryInputRef.current.click()}
@@ -117,15 +124,20 @@ const UploadModal = ({ onSave, onClose, file, setFile, desc, setDesc, open }) =>
             Cancel
           </button>
 
-          <button
-            onClick={() => onSave(file, desc)}
-            className="px-6 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition disabled:opacity-50"
-            disabled={!file || !desc}
-          >
-            Save Memory
-          </button>
+          {loading ? (
+            <div className="flex items-center justify-center px-6 py-2 rounded-xl bg-indigo-600 text-white">
+              <Loader className="w-5 h-5 animate-spin" />
+            </div>
+          ) : (
+            <button
+              onClick={() => onSave(file, desc)}
+              className="px-6 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition disabled:opacity-50"
+              disabled={!file || !desc}
+            >
+              Save Memory
+            </button>
+          )}
         </div>
-
       </div>
     </div>
   );

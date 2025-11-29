@@ -5,11 +5,22 @@ import {
   fetchTimelineData,
   formatTimestamp,
   addMoment,
+  setMusicSeen,
+  fetchMusicSuggestion,
+  addMusic,
 } from "../utils/server.js";
 import Heart from "lucide-react/dist/esm/icons/heart.js";
 import Calendar from "lucide-react/dist/esm/icons/calendar.js";
 import UploadModal from "./UploadModal.jsx";
-import { ZAID_EMAIL, YAKSHI_EMAIL, sendEmail } from "../client/emailJsClient.js";
+import {
+  ZAID_EMAIL,
+  YAKSHI_EMAIL,
+  sendEmail,
+} from "../client/emailJsClient.js";
+import { Music3 } from "lucide-react";
+import MusicSuggest from "./MusicSuggest.jsx";
+import MusicPlayer from "./MusicPlayer.jsx";
+import FloatingActions from "./FloatingActions.jsx";
 
 const Timeline = () => {
   const name = localStorage.getItem("name");
@@ -18,6 +29,13 @@ const Timeline = () => {
   const [file, setFile] = React.useState(null);
   const [description, setDescription] = React.useState("");
   const [showModal, setShowModal] = React.useState(false);
+  const [musicModalOpen, setMusicModalOpen] = React.useState(false);
+  const [lyrics, setLyrics] = React.useState("");
+  const [url, setUrl] = React.useState("");
+  const [openMusicPlayer, setOpenMusicPlayer] = React.useState(false);
+  const [fetchedUrl, setFetchedUrl] = React.useState("");
+  const [fetchedDesc, setFetchedDesc] = React.useState("");
+  const [musicId, setMusicId] = React.useState(null);
 
   const loadTimeline = async () => {
     try {
@@ -28,6 +46,21 @@ const Timeline = () => {
       console.error("Error loading timeline:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchMusic = async () => {
+    try {
+      setLoading(true);
+      const music = await fetchMusicSuggestion();
+      if (music) {
+        setFetchedUrl(music.music_url);
+        setFetchedDesc(music.note);
+        setMusicId(music.id);
+        setOpenMusicPlayer(true);
+      }
+    } catch (error) {
+      console.error("Error fetching music suggestion:", error);
     }
   };
 
@@ -45,43 +78,74 @@ const Timeline = () => {
     }
   };
 
+  const handleAcknowledge = async () => {
+    try {
+      await setMusicSeen(musicId);
+    } catch (error) {
+      console.error("Error acknowledging music:", error);
+    }
+  };
+
+  const uploadMusic = async () => {
+    try {
+      if (!url) return alert("Please provide a Spotify link.");
+      await addMusic(url, lyrics);
+      setUrl("");
+      setLyrics("");
+      fetchMusic();
+    } catch (error) {
+      console.error("Error adding music:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = () => {
     // e.preventDefault();
     if (!file || !description) {
       alert("Please select a photo and enter a description.");
       return;
     }
-    addPost()
-    .then(() => {
+    addPost().then(() => {
       setShowModal(false);
       handleSendEmail();
     });
   };
 
+  const handleSuggestMusic = () => {
+    uploadMusic().then(() => {
+      setMusicModalOpen(false);
+    });
+  };
+
   const handleSendEmail = async () => {
     try {
-      if (name.startsWith('Y') ){
+      if (name.startsWith("Y")) {
         await sendEmail({
           name: name,
           email: ZAID_EMAIL,
           message: `Twinnnieeeee!!!! Your twin has added a new moment just now! Hurry and head over to:
-          https://zaidgit.github.io/moments/` 
-        })
-      } else if (name.startsWith('Z')) {
+          https://zaidgit.github.io/moments/`,
+        });
+      } else if (name.startsWith("Z")) {
         await sendEmail({
           name: name,
           email: YAKSHI_EMAIL,
           message: `Twinnnieeeee!!! Your twin has added a new moment just now! Hurry and head over to:
-          https://zaidgit.github.io/moments/` 
-        })
+          https://zaidgit.github.io/moments/`,
+        });
       }
     } catch (error) {
       console.error("Error sending email:", error);
     }
-  }
+  };
 
   React.useEffect(() => {
     loadTimeline();
+  }, []);
+
+  React.useEffect(() => {
+    fetchMusic();
   }, []);
 
   if (!name) {
@@ -93,6 +157,24 @@ const Timeline = () => {
       <div className="absolute inset-0 z-0">
         <DoodleBackground />
       </div>
+
+      <MusicSuggest
+        open={musicModalOpen}
+        onClose={() => setMusicModalOpen(false)}
+        url={url}
+        setUrl={setUrl}
+        lyrics={lyrics}
+        setLyrics={setLyrics}
+        onSave={handleSuggestMusic}
+        loading={loading}
+      />
+      <MusicPlayer
+        open={openMusicPlayer}
+        link={fetchedUrl}
+        desc={fetchedDesc}
+        onCloseToggle={() => setOpenMusicPlayer((v) => !v)}
+        onAcknowledge={handleAcknowledge}
+      />
 
       <header className="text-center pt-12 pb-16 px-4 md:px-0 relative">
         <div
@@ -120,7 +202,7 @@ const Timeline = () => {
       </header>
 
       <div className="relative z-10 p-4 md:p-8 max-w-3xl mx-auto">
-        <div className="fixed bottom-6 right-6 z-40">
+        {/* <div className="fixed bottom-6 right-6 z-40">
           <button
             onClick={() => setShowModal(true)}
             className="
@@ -138,6 +220,29 @@ const Timeline = () => {
             <Heart className="w-6 h-6 text-indigo-600 fill-indigo-600" />
           </button>
         </div>
+        <div className="fixed bottom-6 right-20 z-40">
+          <button
+            onClick={() => setMusicModalOpen(true)}
+            className="
+      p-4 rounded-full
+      bg-white shadow-xl
+      border border-slate-200
+      hover:bg-slate-50 
+      transition-all
+      flex items-center justify-center
+      hover:-translate-y-1 
+      hover:shadow-2xl
+      duration-200
+    "
+          >
+            <Music3 className="w-6 h-6 text-indigo-600 fill-indigo-600" />
+          </button>
+        </div> */}
+
+        <FloatingActions
+          onImageClick={() => setShowModal(true)}
+          onMusicClick={() => setMusicModalOpen(true)}
+        />
 
         <UploadModal
           onSave={handleSubmit}
@@ -147,6 +252,7 @@ const Timeline = () => {
           desc={description}
           setDesc={setDescription}
           open={showModal}
+          loading={loading}
         />
 
         {loading ? (

@@ -83,3 +83,67 @@ export async function addMoment(file, description) {
 
   return img_url;
 }
+
+/** uploads music suggestion to 'music_suggestions' table
+ * @param {string} url - Spotify track/playlist URL
+ * @param {string} lyrics - Favorite lyric or meaning
+ * @returns {Promise<void>}
+ */
+
+export async function addMusic(url, lyrics) {
+  const { error } = await supabase.from("music")
+  .insert([
+    {
+      music_url: url,
+      note: lyrics,
+      suggested_by  : MY_USER_ID,
+      seen: false,
+    },
+  ]);
+
+  if (error) {
+    console.error("Error adding music suggestion:", error);
+    throw new Error("Failed to add music suggestion.");
+  }
+
+  return;
+}
+
+/** marks a music suggestion as seen
+ * @param {number} id - ID of the music suggestion
+ * @returns {Promise<void>}
+ */
+
+export async function setMusicSeen(id) {
+  const { error } = await supabase.from("music")
+  .update({ seen: true})
+  .eq("id", id);
+
+  if (error) {
+    console.error("Error marking music as seen:", error);
+    throw new Error("Failed to mark music as seen.");
+  }
+
+  return;
+}
+
+/** fetches a music suggestion
+ * @returns {Promise<Object|null>} Music suggestion record or null if none
+ */
+
+export async function fetchMusicSuggestion() {
+  const { data, error } = await supabase
+    .from("music")
+    .select("*")
+    .eq("seen", false)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+    
+  if (error) {
+    console.error("Error fetching music suggestion:", error);
+    throw new Error("Failed to fetch music suggestion.");
+  }
+
+  return data;
+}
