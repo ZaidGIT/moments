@@ -12,15 +12,16 @@ import {
 import Heart from "lucide-react/dist/esm/icons/heart.js";
 import Calendar from "lucide-react/dist/esm/icons/calendar.js";
 import UploadModal from "./UploadModal.jsx";
-import {
-  ZAID_EMAIL,
-  YAKSHI_EMAIL,
-  sendEmail,
-} from "../client/emailJsClient.js";
+// import {
+//   ZAID_EMAIL,
+//   YAKSHI_EMAIL,
+//   sendEmail,
+// } from "../client/emailJsClient.js";
 import { Music3 } from "lucide-react";
 import MusicSuggest from "./MusicSuggest.jsx";
 import MusicPlayer from "./MusicPlayer.jsx";
 import FloatingActions from "./FloatingActions.jsx";
+import ImageTutorial from "./ImageTutorial.jsx";
 
 const Timeline = () => {
   const name = localStorage.getItem("name");
@@ -36,6 +37,9 @@ const Timeline = () => {
   const [fetchedUrl, setFetchedUrl] = React.useState("");
   const [fetchedDesc, setFetchedDesc] = React.useState("");
   const [musicId, setMusicId] = React.useState(null);
+  const [enlargedImage, setEnlargedImage] = React.useState(null);
+  const firstImageRef = React.useRef(null);
+  const [showImageTutorial, setShowImageTutorial] = React.useState(false);
 
   const loadTimeline = async () => {
     try {
@@ -108,7 +112,7 @@ const Timeline = () => {
     }
     addPost().then(() => {
       setShowModal(false);
-      handleSendEmail();
+      // handleSendEmail();
     });
   };
 
@@ -118,27 +122,27 @@ const Timeline = () => {
     });
   };
 
-  const handleSendEmail = async () => {
-    try {
-      if (name.startsWith("Y")) {
-        await sendEmail({
-          name: name,
-          email: ZAID_EMAIL,
-          message: `Twinnnieeeee!!!! Your twin has added a new moment just now! Hurry and head over to:
-          https://zaidgit.github.io/moments/`,
-        });
-      } else if (name.startsWith("Z")) {
-        await sendEmail({
-          name: name,
-          email: YAKSHI_EMAIL,
-          message: `Twinnnieeeee!!! Your twin has added a new moment just now! Hurry and head over to:
-          https://zaidgit.github.io/moments/`,
-        });
-      }
-    } catch (error) {
-      console.error("Error sending email:", error);
-    }
-  };
+  // const handleSendEmail = async () => {
+  //   try {
+  //     if (name.startsWith("Y")) {
+  //       await sendEmail({
+  //         name: name,
+  //         email: ZAID_EMAIL,
+  //         message: `Twinnnieeeee!!!! Your twin has added a new moment just now! Hurry and head over to:
+  //         https://zaidgit.github.io/moments/`,
+  //       });
+  //     } else if (name.startsWith("Z")) {
+  //       await sendEmail({
+  //         name: name,
+  //         email: YAKSHI_EMAIL,
+  //         message: `Twinnnieeeee!!! Your twin has added a new moment just now! Hurry and head over to:
+  //         https://zaidgit.github.io/moments/`,
+  //       });
+  //     }
+  //   } catch (error) {
+  //     console.error("Error sending email:", error);
+  //   }
+  // };
 
   React.useEffect(() => {
     loadTimeline();
@@ -148,15 +152,48 @@ const Timeline = () => {
     fetchMusic();
   }, []);
 
+  React.useEffect(() => {
+    const hasSeenTutorial = localStorage.getItem("hasSeenImageTutorial");
+
+    if (!hasSeenTutorial) {
+      const timer = setTimeout(() => {
+        setShowImageTutorial(true);
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [posts]);
+
+  const closeImageTutorial = () => {
+    localStorage.setItem("hasSeenImageTutorial", "true");
+    setShowImageTutorial(false);
+  };
+
   if (!name) {
     return <WelcomeModal />;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 relative overflow-hidden">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-gray-50 to-slate-100 relative overflow-hidden">
       <div className="absolute inset-0 z-0">
         <DoodleBackground />
       </div>
+
+      {enlargedImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
+          onClick={() => setEnlargedImage(null)}
+        >
+          <img
+            src={enlargedImage}
+            alt="Enlarged"
+            className="max-w-full max-h-full rounded-lg shadow-lg"
+          />
+        </div>
+      )}
+
+      {showImageTutorial && (
+        <ImageTutorial targetRef={firstImageRef} onClose={closeImageTutorial} />
+      )}
 
       <MusicSuggest
         open={musicModalOpen}
@@ -287,7 +324,7 @@ const Timeline = () => {
           </div>
         ) : (
           <div className="relative">
-            <div className="absolute left-1/2 top-0 bottom-0 transform -translate-x-1/2 w-[2px] bg-slate-300"></div>
+            <div className="absolute left-1/2 top-0 bottom-0 transform -translate-x-1/2 w-0.5 bg-slate-300"></div>
 
             <div
               className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2
@@ -310,7 +347,7 @@ const Timeline = () => {
               />
 
               <div className="space-y-12 w-full max-w-5xl">
-                {posts.map((post) => {
+                {posts.map((post, index) => {
                   const name = localStorage.getItem("name") || "";
                   const startsSameLetter =
                     post.user_id?.[0]?.toLowerCase() ===
@@ -338,7 +375,7 @@ const Timeline = () => {
                         <div
                           className={`absolute w-8 h-8 rounded-full bg-white border-2 border-slate-300 shadow-md flex items-center justify-center 
                                 top-1/4 transform -translate-y-1/2 z-20 ${
-                                  isRight ? "-right-[40px]" : "-left-[40px]"
+                                  isRight ? "-right-10" : "-left-10"
                                 }`}
                         >
                           <Heart
@@ -348,9 +385,11 @@ const Timeline = () => {
 
                         <div className="aspect-video overflow-hidden rounded-xl mb-3 border border-slate-100">
                           <img
+                            ref={index === 0 ? firstImageRef : null}
                             src={post.img_url}
                             alt={post.desc}
                             className="w-full h-full object-cover"
+                            onClick={() => {setEnlargedImage(post.img_url); setShowImageTutorial(false);}}
                           />
                         </div>
 
