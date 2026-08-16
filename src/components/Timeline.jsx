@@ -389,7 +389,7 @@ const Timeline = () => {
                             src={post.img_url}
                             alt={post.desc}
                             className="w-full h-full object-cover"
-                            onClick={() => {setEnlargedImage(post.img_url); setShowImageTutorial(false);}}
+                            onClick={() => {setEnlargedImage(post.img_url); closeImageTutorial();}}
                           />
                         </div>
 
